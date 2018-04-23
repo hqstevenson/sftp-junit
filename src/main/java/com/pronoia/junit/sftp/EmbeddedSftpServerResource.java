@@ -6,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,63 +14,82 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.pronoia.junit.sftp;
 
+import com.pronoia.junit.sftp.impl.SftpFilesystemFactory;
+import com.pronoia.junit.sftp.impl.SimplePasswordAuthenticator;
+
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 
-import org.apache.sshd.SshServer;
 import org.apache.sshd.common.NamedFactory;
-import org.apache.sshd.common.file.virtualfs.VirtualFileSystemFactory;
 import org.apache.sshd.server.Command;
-import org.apache.sshd.server.PasswordAuthenticator;
-import org.apache.sshd.server.command.ScpCommandFactory;
+import org.apache.sshd.server.SshServer;
+import org.apache.sshd.server.auth.UserAuth;
+import org.apache.sshd.server.auth.keyboard.UserAuthKeyboardInteractiveFactory;
+import org.apache.sshd.server.auth.password.UserAuthPasswordFactory;
 import org.apache.sshd.server.keyprovider.SimpleGeneratorHostKeyProvider;
-import org.apache.sshd.server.session.ServerSession;
-import org.apache.sshd.sftp.subsystem.SftpSubsystem;
+import org.apache.sshd.server.scp.ScpCommandFactory;
+import org.apache.sshd.server.subsystem.sftp.SftpSubsystemFactory;
 import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.FileSystemUtils;
 
 public class EmbeddedSftpServerResource extends ExternalResource {
-    static final int KEY_SIZE = 1024;
-    static final String ALGORITHM = "DSA";
+    public static final String DEFAULT_SFTP_HOST = "0.0.0.0";
+    public static final int DEFAULT_SFTP_PORT = 22222;
+    public static final Path DEFAULT_SFTP_ROOT_PATH = Paths.get("target/sftp");
+    public static final String DEFAULT_SFTP_BASE_USER_HOME_DIRECTORY = "home";
 
-    Logger log = LoggerFactory.getLogger(this.getClass());
+    protected SshServer sshd;
+    protected boolean cleanFilesystemOnStartup = true;
 
-    File sftpRootDirectory = new File("target/sftp");
-
-    private SshServer sshd = SshServer.setUpDefaultServer();
-
+    private Logger log = LoggerFactory.getLogger(EmbeddedSftpServerResource.class);
 
     public EmbeddedSftpServerResource() {
-        sshd.setPasswordAuthenticator(new SimplePasswordAuthenticator());
-        sshd.setSubsystemFactories(Arrays.<NamedFactory<Command>>asList(new SftpSubsystem.Factory()));
+        sshd = SshServer.setUpDefaultServer();
 
+        setHost(DEFAULT_SFTP_HOST);
+        setPort(DEFAULT_SFTP_PORT);
+
+        List<NamedFactory<UserAuth>> userAuthFactories = new ArrayList<>();
+        userAuthFactories.add(UserAuthPasswordFactory.INSTANCE);
+        userAuthFactories.add(UserAuthKeyboardInteractiveFactory.INSTANCE);
+        sshd.setUserAuthFactories(userAuthFactories);
+
+        sshd.setKeyPairProvider(new SimpleGeneratorHostKeyProvider());
         sshd.setCommandFactory(new ScpCommandFactory());
-//        Path keyPath = Paths.get(sftpRootDirectory.getAbsolutePath(), "hostkey.ser");
-//        sshd.setKeyPairProvider(new SimpleGeneratorHostKeyProvider(keyPath));
-//        sshd.setKeyPairProvider(new SimpleGeneratorHostKeyProvider(sftpRootDirectory.getAbsolutePath() + '/' + "hostkey.ser", ALGORITHM, KEY_SIZE));
-        sshd.setKeyPairProvider(new SimpleGeneratorHostKeyProvider(sftpRootDirectory.getAbsolutePath() + '/' + "hostkey.ser"));
-    }
 
-    public EmbeddedSftpServerResource(int port) {
-        sshd.setPort(port);
-    }
+        List<NamedFactory<Command>> subsystemFactories = new ArrayList<>();
+        SftpSubsystemFactory sftpSubsystemFactory = new SftpSubsystemFactory.Builder().build();
+        subsystemFactories.add(sftpSubsystemFactory);
+        sshd.setSubsystemFactories(subsystemFactories);
 
-    public EmbeddedSftpServerResource(String host, int port) {
-        sshd.setHost(host);
-        sshd.setPort(port);
+        sshd.setPasswordAuthenticator(new SimplePasswordAuthenticator());
+
+        sshd.setFileSystemFactory(new SftpFilesystemFactory(DEFAULT_SFTP_ROOT_PATH, DEFAULT_SFTP_BASE_USER_HOME_DIRECTORY));
     }
 
     @Override
     protected void before() throws Throwable {
         super.before();
-        log.info("Starting embedded SSH server: {}:{}", this.getHost(), this.getPort());
         try {
             this.configure();
+            if (cleanFilesystemOnStartup) {
+                File rootDirectory = getFileSystemFactory().getRootPath().toFile();
+                if (rootDirectory.exists()) {
+                    log.info("Cleaning SFTP Filesystem {}", rootDirectory);
+                    FileSystemUtils.deleteRecursively(rootDirectory);
+                }
+            }
+            log.info("Starting embedded SSH server: {}:{} {}",
+                this.getHost(), this.getPort(), getFileSystemFactory().getRootPath().toString());
             sshd.start();
         } catch (Exception ex) {
             throw new RuntimeException("Exception encountered starting embedded SSH server: " + this.getHost() + ':' + this.getPort());
@@ -83,23 +102,15 @@ public class EmbeddedSftpServerResource extends ExternalResource {
         log.info("Stopping embedded SSH server: {}:{}", this.getHost(), this.getPort());
         try {
             sshd.stop();
-        } catch (InterruptedException e) {
-            log.warn("Exception encountered stopping embedded SSH server: {}:{}" + this.getHost(), this.getPort());
+        } catch (IOException stopEx) {
+            log.warn("Exception encountered stopping embedded SSH server: {}:{}", this.getHost(), this.getPort(), stopEx);
         }
     }
 
-    private void configure() {
-        if (!sftpRootDirectory.exists()) {
-            sftpRootDirectory.mkdirs();
-        }
-
-        String rootDirectoryAbsolutePath = sftpRootDirectory.getAbsolutePath();
-
-        VirtualFileSystemFactory fileSystemFactory = new VirtualFileSystemFactory();
-        new VirtualFileSystemFactory(rootDirectoryAbsolutePath);
-        fileSystemFactory.setUserHomeDir(getUsername(), rootDirectoryAbsolutePath);
-        sshd.setFileSystemFactory(fileSystemFactory);
-
+    /**
+     * Override this method to customize the configuration of the SFTP Server Resource.
+     */
+    protected void configure() {
     }
 
     public String getHost() {
@@ -130,40 +141,16 @@ public class EmbeddedSftpServerResource extends ExternalResource {
         return this;
     }
 
-    public String getUsername() {
-        return getPasswordAuthenticator().getUsername();
-    }
-
-    public void setUsername(String username) {
-        getPasswordAuthenticator().setUsername(username);
-    }
-
-    public EmbeddedSftpServerResource username(String username) {
-        this.setUsername(username);
-
-        return this;
-    }
-
-    public String getPassword() {
-        return getPasswordAuthenticator().getPassword();
-    }
-
-    public void setPassword(String password) {
-        getPasswordAuthenticator().setPassword(password);
-    }
-
-    public EmbeddedSftpServerResource password(String password) {
-        this.setPassword(password);
-
-        return this;
-    }
-
     public String getRootDirectory() {
-        return sftpRootDirectory.getPath();
+        return getFileSystemFactory().getRootPath().toString();
+    }
+
+    public void setRootDirectory(Path rootDirectory) {
+        getFileSystemFactory().setRootPath(rootDirectory);
     }
 
     public void setRootDirectory(String rootDirectory) {
-        sftpRootDirectory = new File(rootDirectory);
+        getFileSystemFactory().setRootPath(rootDirectory);
     }
 
     public EmbeddedSftpServerResource rootDirectory(String rootDirectory) {
@@ -172,37 +159,44 @@ public class EmbeddedSftpServerResource extends ExternalResource {
         return this;
     }
 
-    class SimplePasswordAuthenticator implements PasswordAuthenticator {
-        String username = "user";
-        String password = "passwd";
+    public EmbeddedSftpServerResource rootDirectory(Path rootDirectory) {
+        this.setRootDirectory(rootDirectory);
 
-        @Override
-        public boolean authenticate(String username, String password, ServerSession session) {
-            if (getUsername().equalsIgnoreCase(username) && getPassword().equals(password)) {
-                return true;
-            }
-            return false;
-        }
-
-        public String getUsername() {
-            return username;
-        }
-
-        public void setUsername(String username) {
-            this.username = username;
-        }
-
-        public String getPassword() {
-            return password;
-        }
-
-        public void setPassword(String password) {
-            this.password = password;
-        }
+        return this;
     }
 
+    public boolean isCleanFilesystemOnStartup() {
+        return cleanFilesystemOnStartup;
+    }
 
-    private SimplePasswordAuthenticator getPasswordAuthenticator() {
+    public void setCleanFilesystemOnStartup(boolean cleanFilesystemOnStartup) {
+        this.cleanFilesystemOnStartup = cleanFilesystemOnStartup;
+    }
+
+    public EmbeddedSftpServerResource cleanFilesystemOnStartup(boolean cleanFilesystemOnStartup) {
+        setCleanFilesystemOnStartup(cleanFilesystemOnStartup);
+        return this;
+    }
+
+    public void addUser(String userName, String password) {
+        getPasswordAuthenticator().addUser(userName, password);
+    }
+
+    public EmbeddedSftpServerResource user(String userName, String password) {
+        this.addUser(userName, password);
+
+        return this;
+    }
+
+    public SshServer getSshServer() {
+        return sshd;
+    }
+
+    public SimplePasswordAuthenticator getPasswordAuthenticator() {
         return (SimplePasswordAuthenticator) sshd.getPasswordAuthenticator();
+    }
+
+    public SftpFilesystemFactory getFileSystemFactory() {
+        return (SftpFilesystemFactory) sshd.getFileSystemFactory();
     }
 }

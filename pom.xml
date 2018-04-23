@@ -22,7 +22,7 @@
 
     <groupId>com.github.hqstevenson.junit</groupId>
     <artifactId>sftp-junit</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>0.2.0</version>
 
     <name>SFTP JUnit Rule</name>
     <description>
@@ -54,23 +54,17 @@
     </scm>
 
     <properties>
-        <sshd-sftp-version>0.11.0</sshd-sftp-version>
-        <!--<sshd-core-version>1.7.0</sshd-core-version>-->
-        <sshd-core-version>0.14.0</sshd-core-version>
+        <sshd-version>1.7.0</sshd-version>
         <junit-version>4.12</junit-version>
         <slf4j-version>1.7.21</slf4j-version>
+        <camel-version>2.21.0</camel-version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>org.apache.sshd</groupId>
             <artifactId>sshd-core</artifactId>
-            <version>${sshd-core-version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.sshd</groupId>
-            <artifactId>sshd-sftp</artifactId>
-            <version>${sshd-sftp-version}</version>
+            <version>${sshd-version}</version>
         </dependency>
 
         <dependency>
@@ -86,6 +80,31 @@
             <artifactId>slf4j-api</artifactId>
             <version>${slf4j-version}</version>
             <scope>provided</scope>
+        </dependency>
+        <!-- Test Dependencies -->
+        <dependency>
+            <!-- Used for FileUtils -->
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.6</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-spring</artifactId>
+            <version>${camel-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-test-spring</artifactId>
+            <version>${camel-version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-ftp</artifactId>
+            <version>${camel-version}</version>
         </dependency>
 
         <!-- Test Logging -->
@@ -116,7 +135,6 @@
                 <artifactId>maven-deploy-plugin</artifactId>
                 <version>2.8.2</version>
             </plugin>
-            <!--
             <plugin>
                 <artifactId>maven-gpg-plugin</artifactId>
                 <version>1.6</version>
@@ -130,7 +148,6 @@
                     </execution>
                 </executions>
             </plugin>
-            -->
             <plugin>
                 <artifactId>maven-install-plugin</artifactId>
                 <version>2.5.2</version>
