@@ -27,6 +27,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.sshd.common.NamedFactory;
 import org.apache.sshd.server.Command;
 import org.apache.sshd.server.SshServer;
@@ -39,7 +40,6 @@ import org.apache.sshd.server.subsystem.sftp.SftpSubsystemFactory;
 import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.FileSystemUtils;
 
 public class EmbeddedSftpServerResource extends ExternalResource {
     public static final String DEFAULT_SFTP_HOST = "0.0.0.0";
@@ -85,7 +85,7 @@ public class EmbeddedSftpServerResource extends ExternalResource {
                 File rootDirectory = getFileSystemFactory().getRootPath().toFile();
                 if (rootDirectory.exists()) {
                     log.info("Cleaning SFTP Filesystem {}", rootDirectory);
-                    FileSystemUtils.deleteRecursively(rootDirectory);
+                    FileUtils.deleteDirectory(rootDirectory);
                 }
             }
             log.info("Starting embedded SSH server: {}:{} {}",

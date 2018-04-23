@@ -22,7 +22,7 @@
 
     <groupId>com.github.hqstevenson.junit</groupId>
     <artifactId>sftp-junit</artifactId>
-    <version>0.2.0</version>
+    <version>0.2.1</version>
 
     <name>SFTP JUnit Rule</name>
     <description>
@@ -74,6 +74,13 @@
             <scope>provided</scope>
         </dependency>
 
+        <dependency>
+            <!-- Used for FileUtils -->
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.6</version>
+        </dependency>
+
         <!-- Logging -->
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -82,29 +89,25 @@
             <scope>provided</scope>
         </dependency>
         <!-- Test Dependencies -->
-        <dependency>
-            <!-- Used for FileUtils -->
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-            <version>2.6</version>
-            <scope>test</scope>
-        </dependency>
 
         <dependency>
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-spring</artifactId>
             <version>${camel-version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-test-spring</artifactId>
             <version>${camel-version}</version>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-ftp</artifactId>
             <version>${camel-version}</version>
+            <scope>test</scope>
         </dependency>
 
         <!-- Test Logging -->
