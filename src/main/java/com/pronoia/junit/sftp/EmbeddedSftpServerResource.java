@@ -90,7 +90,7 @@ public class EmbeddedSftpServerResource extends ExternalResource {
             }
             log.info("Starting embedded SSH server: {}:{} {}",
                 this.getHost(), this.getPort(), getFileSystemFactory().getRootPath().toString());
-            sshd.start();
+            this.start();
         } catch (Exception ex) {
             throw new RuntimeException("Exception encountered starting embedded SSH server: " + this.getHost() + ':' + this.getPort());
         }
@@ -101,10 +101,22 @@ public class EmbeddedSftpServerResource extends ExternalResource {
         super.after();
         log.info("Stopping embedded SSH server: {}:{}", this.getHost(), this.getPort());
         try {
-            sshd.stop();
+            this.stop();
         } catch (IOException stopEx) {
             log.warn("Exception encountered stopping embedded SSH server: {}:{}", this.getHost(), this.getPort(), stopEx);
         }
+    }
+
+    public void start() throws IOException {
+        sshd.start();
+    }
+
+    public void stop() throws IOException {
+        sshd.stop();
+    }
+
+    public void stop(boolean immediately) throws IOException {
+        sshd.stop(immediately);
     }
 
     /**

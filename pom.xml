@@ -22,7 +22,7 @@
 
     <groupId>com.github.hqstevenson.junit</groupId>
     <artifactId>sftp-junit</artifactId>
-    <version>0.2.1</version>
+    <version>0.2.2</version>
 
     <name>SFTP JUnit Rule</name>
     <description>
