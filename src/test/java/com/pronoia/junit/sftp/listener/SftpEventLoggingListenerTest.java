@@ -168,7 +168,7 @@ public class SftpEventLoggingListenerTest {
     public void testReading() throws Exception {
         instance.setReadLevel(expected);
         instance.reading(session, null, null,0, null, 0, 0);
-        verify(instance).doLog(eq(expected), any(String.class), any(ServerSession.class), any(), any(), any(), any(), any());
+        verify(instance).doLog(eq(expected), any(String.class), any(ServerSession.class), any(), any(), any(), any(), any(), any());
     }
 
     /**
@@ -180,7 +180,7 @@ public class SftpEventLoggingListenerTest {
     public void testRead() throws Exception {
         instance.setReadLevel(expected);
         instance.read(session, null, null, 0, null, 0, 0,0 , thrown);
-        verify(instance).doLog(eq(expected), any(String.class), any(ServerSession.class), any(), any(), any(), any(), any(), any(), any());
+        verify(instance).doLog(eq(expected), any(String.class), any(ServerSession.class), any(), any(), any(), any(), any(), any(), any(), any());
     }
 
     /**
@@ -192,7 +192,7 @@ public class SftpEventLoggingListenerTest {
     public void testWriting() throws Exception {
         instance.setWriteLevel(expected);
         instance.writing(session, null, null,0, null, 0, 0);
-        verify(instance).doLog(eq(expected), any(String.class), any(ServerSession.class), any(), any(), any(), any(), any());
+        verify(instance).doLog(eq(expected), any(String.class), any(ServerSession.class), any(), any(), any(), any(), any(), any());
     }
 
     /**
@@ -204,7 +204,7 @@ public class SftpEventLoggingListenerTest {
     public void testWritten() throws Exception {
         instance.setWriteLevel(expected);
         instance.written(session, null, null,0, null, 0, 0, thrown);
-        verify(instance).doLog(eq(expected), any(String.class), any(ServerSession.class), any(), any(), any(), any(), any(), any());
+        verify(instance).doLog(eq(expected), any(String.class), any(ServerSession.class), any(), any(), any(), any(), any(), any(), any());
     }
 
     /**

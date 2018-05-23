@@ -69,112 +69,118 @@ public class SftpEventLoggingListener extends EventLoggingListenerSupport implem
 
     @Override
     public void creating(ServerSession session, Path path, Map<String, ?> attrs) {
-        doLog(createLevel, "creating(ServerSession = {}, {}, {})", session, path, attrs);
+        doLog(createLevel, "creating(ServerSession = {}, Path = {}, attrs = {})", session, path, attrs);
     }
 
     @Override
     public void created(ServerSession session, Path path, Map<String, ?> attrs, Throwable thrown) {
-        doLog(createLevel, "created(ServerSession = {}, {}, {})", session, path, thrown);
+        doLog(createLevel, "created(ServerSession = {}, Path = {}, attrs = {})", session, path, thrown);
     }
 
     @Override
     public void removing(ServerSession session, Path path) {
-        doLog(createLevel, "removing(ServerSession = {}, {})", session, path);
+        doLog(createLevel, "removing(ServerSession = {}, Path = {})", session, path);
     }
 
     @Override
     public void removed(ServerSession session, Path path, Throwable thrown) {
-        doLog(createLevel, "removed(ServerSession = {}, {}, {})", session, path, thrown);
+        doLog(createLevel, "removed(ServerSession = {}, Path = {}, Throwable = {})", session, path, thrown);
     }
 
     @Override
     public void opening(ServerSession session, String remoteHandle, Handle localHandle) {
-        doLog(openLevel, "opening(ServerSession = {}, {}, {})", session, remoteHandle, localHandle);
+        doLog(openLevel, "opening(ServerSession = {}, remoteHandle = {}, localHandle = {})", session, remoteHandle, localHandle);
     }
 
     @Override
     public void open(ServerSession session, String remoteHandle, Handle localHandle) {
-        doLog(openLevel, "open(ServerSession = {}, {}, {})", session, remoteHandle, localHandle);
+        doLog(openLevel, "open(ServerSession = {}, remoteHandle = {}, localHandle = {})", session, remoteHandle, localHandle);
     }
 
     @Override
     public void close(ServerSession session, String remoteHandle, Handle localHandle) {
-        doLog(openLevel, "close(ServerSession = {}, {}, {})", session, remoteHandle, localHandle);
+        doLog(openLevel, "close(ServerSession = {}, remoteHandle = {}, localHandle = {})", session, remoteHandle, localHandle);
     }
 
     @Override
     public void read(ServerSession session, String remoteHandle, DirectoryHandle localHandle, Map<String, Path> entries) {
-        doLog(readLevel, "read(ServerSession = {}, {}, {}, {})", session, remoteHandle, localHandle, entries);
+        doLog(readLevel, "read(ServerSession = {}, remoteHandle = {}, DirectoryHandle ={}, entries = {})", session, remoteHandle, localHandle, entries);
     }
 
     @Override
     public void reading(ServerSession session, String remoteHandle, FileHandle localHandle, long offset, byte[] data, int dataOffset, int dataLen) {
-        doLog(readLevel, "reading(ServerSession = {}, {}, {}, {}, {}, {})", session, remoteHandle, localHandle, offset, dataOffset, dataLen);
+        doLog(readLevel, "reading(ServerSession = {}, remoteHandle = {}, FileHandle = {}, offset = {}, data = byte[{}], dataOffset = {}, dataLen = {})",
+            session, remoteHandle, localHandle, offset, data == null ? -1 : data.length, dataOffset, dataLen);
     }
 
     @Override
     public void read(ServerSession session, String remoteHandle, FileHandle localHandle, long offset, byte[] data, int dataOffset, int dataLen, int readLen, Throwable thrown) {
-        doLog(readLevel, "read(ServerSession = {}, {}, {}, {}, {}, {}, {}, {})", session, remoteHandle, localHandle, offset, dataOffset, dataLen, readLen, thrown);
+        doLog(readLevel, "read(ServerSession = {}, remoteHandle = {}, FileHandle = {}, offset = {}, data = byte[{}], dataOffset = {}, dataLen = {}, readLen = {}, thrown = {})",
+            session, remoteHandle, localHandle, offset,  data == null ? -1 : data.length, dataOffset, dataLen, readLen, thrown);
     }
 
     @Override
     public void writing(ServerSession session, String remoteHandle, FileHandle localHandle, long offset, byte[] data, int dataOffset, int dataLen) {
-        doLog(writeLevel, "writing(ServerSession = {}, {}, {}, {}, {}, {}, {})", session, remoteHandle, localHandle, offset, dataOffset, dataLen);
+        doLog(writeLevel, "writing(ServerSession = {}, remoteHandle = {}, FileHandle = {}, offset = {}, data = byte[{}], dataOffset = {}, dataLen = {})",
+            session, remoteHandle, localHandle, offset,  data == null ? -1 : data.length, dataOffset, dataLen);
     }
 
     @Override
     public void written(ServerSession session, String remoteHandle, FileHandle localHandle, long offset, byte[] data, int dataOffset, int dataLen, Throwable thrown) {
-        doLog(writeLevel, "written(ServerSession = {}, {}, {}, {}, {}, {}, {})", session, remoteHandle, localHandle, offset, dataOffset, dataLen, thrown);
+        doLog(writeLevel, "written(ServerSession = {}, remoteHandle = {}, FileHandle = {}, offset = {}, data = byte[{}], dataOffset = {}, dataLen = {}, thrown = {})",
+            session, remoteHandle, localHandle, offset, data == null ? -1 : data.length, dataOffset, dataLen, thrown);
     }
 
     @Override
     public void blocking(ServerSession session, String remoteHandle, FileHandle localHandle, long offset, long length, int mask) {
-        doLog(blockLevel, "blocking(ServerSession = {}, {}, {}, {}, {}, {})", session, remoteHandle, localHandle, offset, length, mask);
+        doLog(blockLevel, "blocking(ServerSession = {}, remoteHandle = {}, FileHandle = {}, offset = {}, length = {}, mask = {})", session, remoteHandle, localHandle, offset, length, mask);
     }
 
     @Override
     public void blocked(ServerSession session, String remoteHandle, FileHandle localHandle, long offset, long length, int mask, Throwable thrown) {
-        doLog(blockLevel, "blocked(ServerSession = {}, {}, {}, {}, {}, {}, {})", session, remoteHandle, localHandle, offset, length, mask, thrown);
+        doLog(blockLevel, "blocked(ServerSession = {}, remoteHandle = {}, FileHandle = {}, offset = {}, length = {}, mask = {}, Throwable = {})",
+            session, remoteHandle, localHandle, offset, length, mask, thrown);
     }
 
     @Override
     public void unblocking(ServerSession session, String remoteHandle, FileHandle localHandle, long offset, long length) {
-        doLog(blockLevel, "unblocking(ServerSession = {}, {}, {}, {}, {})", session, remoteHandle, localHandle, offset, length);
+        doLog(blockLevel, "unblocking(ServerSession = {}, remoteHandle = {}, FileHandle = {}, offset = {}, length = {})", session, remoteHandle, localHandle, offset, length);
     }
 
     @Override
     public void unblocked(ServerSession session, String remoteHandle, FileHandle localHandle, long offset, long length, Throwable thrown) {
-        doLog(blockLevel, "unblocked(ServerSession = {}, {}, {}, {}, {}, {})", session, remoteHandle, localHandle, offset, length, thrown);
+        doLog(blockLevel, "unblocked(ServerSession = {}, remoteHandle = {}, FileHandle = {}, offset = {}, length = {}, Throwable = {})",
+            session, remoteHandle, localHandle, offset, length, thrown);
     }
 
     @Override
     public void moving(ServerSession session, Path srcPath, Path dstPath, Collection<CopyOption> opts) {
-        doLog(moveLevel, "moved(ServerSession = {}, {}, {}, {})", session, srcPath, dstPath, opts);
+        doLog(moveLevel, "moved(ServerSession = {}, srcPath = {}, dstPath = {}, opts = {})", session, srcPath, dstPath, opts);
     }
 
     @Override
     public void moved(ServerSession session, Path srcPath, Path dstPath, Collection<CopyOption> opts, Throwable thrown) {
-        doLog(moveLevel, "moved(ServerSession = {}, {}, {}, {}, {})", session, srcPath, dstPath, opts, thrown);
+        doLog(moveLevel, "moved(ServerSession = {}, srcPath = {}, dstPath = {}, opts = {}, Throwable = {})", session, srcPath, dstPath, opts, thrown);
     }
 
     @Override
-    public void linking(ServerSession session, Path source, Path target, boolean symLink) {
-        doLog(linkLevel, "linking(ServerSession = {}, {}, {}, {})", session, source, target, symLink);
+    public void linking(ServerSession session, Path srcPath, Path dstPath, boolean symLink) {
+        doLog(linkLevel, "linking(ServerSession = {}, srcPath = {}, dstPath = {}, symLink = {})", session, srcPath, dstPath, symLink);
     }
 
     @Override
-    public void linked(ServerSession session, Path source, Path target, boolean symLink, Throwable thrown) {
-        doLog(linkLevel, "linked(ServerSession = {}, {}, {}, {}, {})", session, source, target, symLink, thrown);
+    public void linked(ServerSession session, Path srcPath, Path dstPath, boolean symLink, Throwable thrown) {
+        doLog(linkLevel, "linked(ServerSession = {}, srcPath = {}, dstPath = {}, symLink = {},  Throwable ={})", session, srcPath, dstPath, symLink, thrown);
     }
 
     @Override
     public void modifyingAttributes(ServerSession session, Path path, Map<String, ?> attrs) {
-        doLog(modifyAttributesLevel, "modifyingAttributes(ServerSession = {}, {}, {})", session, path, attrs);
+        doLog(modifyAttributesLevel, "modifyingAttributes(ServerSession = {}, Path = {}, attrs = {})", session, path, attrs);
     }
 
     @Override
     public void modifiedAttributes(ServerSession session, Path path, Map<String, ?> attrs, Throwable thrown) {
-        doLog(modifyAttributesLevel, "modifiedAttributes(ServerSession = {}, {}, {}, {})", session, path, attrs, thrown);
+        doLog(modifyAttributesLevel, "modifiedAttributes(ServerSession = {}, Path = {}, attrs = {}, Throwable = {})", session, path, attrs, thrown);
     }
 
     public Level getSessionLevel() {
