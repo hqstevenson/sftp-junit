@@ -155,7 +155,7 @@ public class SftpEventLoggingListener extends EventLoggingListenerSupport implem
 
     @Override
     public void moving(ServerSession session, Path srcPath, Path dstPath, Collection<CopyOption> opts) {
-        doLog(moveLevel, "moved(ServerSession = {}, srcPath = {}, dstPath = {}, opts = {})", session, srcPath, dstPath, opts);
+        doLog(moveLevel, "moving(ServerSession = {}, srcPath = {}, dstPath = {}, opts = {})", session, srcPath, dstPath, opts);
     }
 
     @Override
