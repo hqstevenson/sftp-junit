@@ -33,14 +33,13 @@ import org.slf4j.LoggerFactory;
 public class SftpFilesystemFactory extends VirtualFileSystemFactory {
     private Logger log = LoggerFactory.getLogger(SftpFilesystemFactory.class);
 
-    Path rootPath;
-
     public SftpFilesystemFactory(Path rootPath, String virtualHomeDirectoryBase) {
-        this.rootPath = rootPath.toAbsolutePath();
+        super(rootPath.toAbsolutePath());
     }
 
     @Override
     public FileSystem createFileSystem(Session session) throws IOException {
+        Path rootPath = getRootPath();
 
         if (!Files.exists(rootPath)) {
             rootPath.toFile().mkdirs();
@@ -50,15 +49,14 @@ public class SftpFilesystemFactory extends VirtualFileSystemFactory {
     }
 
     public Path getRootPath() {
-        return rootPath;
+        return getDefaultHomeDir();
     }
 
     public void setRootPath(String rootPath) {
         this.setRootPath(Paths.get(rootPath));
     }
 
-    public void setRootPath(Path rootPath) {
-        this.rootPath = rootPath.toAbsolutePath();
+    public void setRootPath(Path rootPath) { super.setDefaultHomeDir(rootPath.toAbsolutePath());
     }
 
 }

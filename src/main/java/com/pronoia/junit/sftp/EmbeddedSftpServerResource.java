@@ -22,6 +22,7 @@ import com.pronoia.junit.sftp.impl.SimplePasswordAuthenticator;
 import java.io.File;
 import java.io.IOException;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -31,6 +32,7 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 
 import org.apache.sshd.common.NamedFactory;
+import org.apache.sshd.common.file.virtualfs.VirtualFileSystemFactory;
 import org.apache.sshd.common.scp.ScpTransferEventListener;
 
 import org.apache.sshd.server.Command;
@@ -41,6 +43,7 @@ import org.apache.sshd.server.auth.password.UserAuthPasswordFactory;
 import org.apache.sshd.server.keyprovider.SimpleGeneratorHostKeyProvider;
 import org.apache.sshd.server.scp.ScpCommandFactory;
 import org.apache.sshd.server.subsystem.sftp.SftpEventListener;
+import org.apache.sshd.server.subsystem.sftp.SftpSubsystem;
 import org.apache.sshd.server.subsystem.sftp.SftpSubsystemFactory;
 
 import org.junit.rules.ExternalResource;
@@ -78,6 +81,10 @@ public class EmbeddedSftpServerResource extends ExternalResource {
         this.scpCommandFactory = scpCommandFactory;
         this.sftpSubsystemFactory = sftpSubsystemFactory;
 
+        SftpSubsystem tmp;
+
+
+
         sshd = SshServer.setUpDefaultServer();
 
         setHost(DEFAULT_SFTP_HOST);
@@ -97,6 +104,9 @@ public class EmbeddedSftpServerResource extends ExternalResource {
 
         sshd.setPasswordAuthenticator(new SimplePasswordAuthenticator());
 
+        Path absolutePath = DEFAULT_SFTP_ROOT_PATH.toAbsolutePath();
+        absolutePath.toFile().mkdirs();
+
         sshd.setFileSystemFactory(new SftpFilesystemFactory(DEFAULT_SFTP_ROOT_PATH, DEFAULT_SFTP_BASE_USER_HOME_DIRECTORY));
     }
 
@@ -105,15 +115,15 @@ public class EmbeddedSftpServerResource extends ExternalResource {
         super.before();
         try {
             this.configure();
+            Path rootDirectory = getRootDirectory();
             if (cleanFilesystemOnStartup) {
-                File rootDirectory = getFileSystemFactory().getRootPath().toFile();
-                if (rootDirectory.exists()) {
+                if (Files.exists(rootDirectory)) {
                     log.info("Cleaning SFTP Filesystem {}", rootDirectory);
-                    FileUtils.deleteDirectory(rootDirectory);
+                    FileUtils.deleteDirectory(rootDirectory.toFile());
                 }
             }
             log.info("Starting embedded SSH server: {}:{} {}",
-                this.getHost(), this.getPort(), getFileSystemFactory().getRootPath().toString());
+                this.getHost(), this.getPort(), rootDirectory);
             this.start();
         } catch (Exception ex) {
             throw new RuntimeException("Exception encountered starting embedded SSH server: " + this.getHost() + ':' + this.getPort());
@@ -177,16 +187,16 @@ public class EmbeddedSftpServerResource extends ExternalResource {
         return this;
     }
 
-    public String getRootDirectory() {
-        return getFileSystemFactory().getRootPath().toString();
+    public Path getRootDirectory() {
+        return getFileSystemFactory().getDefaultHomeDir();
     }
 
     public void setRootDirectory(Path rootDirectory) {
-        getFileSystemFactory().setRootPath(rootDirectory);
+        getFileSystemFactory().setDefaultHomeDir(rootDirectory);
     }
 
     public void setRootDirectory(String rootDirectory) {
-        getFileSystemFactory().setRootPath(rootDirectory);
+        getFileSystemFactory().setDefaultHomeDir(Paths.get(rootDirectory).toAbsolutePath());
     }
 
     public EmbeddedSftpServerResource rootDirectory(String rootDirectory) {
@@ -232,8 +242,8 @@ public class EmbeddedSftpServerResource extends ExternalResource {
         return (SimplePasswordAuthenticator) sshd.getPasswordAuthenticator();
     }
 
-    public SftpFilesystemFactory getFileSystemFactory() {
-        return (SftpFilesystemFactory) sshd.getFileSystemFactory();
+    public VirtualFileSystemFactory getFileSystemFactory() {
+        return (VirtualFileSystemFactory) sshd.getFileSystemFactory();
     }
 
     public ScpCommandFactory getScpCommandFactory() {
